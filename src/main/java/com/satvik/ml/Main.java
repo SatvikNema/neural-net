@@ -12,38 +12,38 @@ import static java.lang.Double.NaN;
 
 public class Main {
 
-    double ALPHA = 0.5;
+    double ALPHA = 0.01;
     private static final String rootPath = "/Users/satvik.nema/Documents/mnist_dataset/";
     public static void main(String[] args) {
 
         // neural network which determines if the binary input is divisible by 3
 
-        List<Pair<Matrix, Matrix>> trainingData = List.of(
-                Pair.of(new Matrix(new double[][]{{0, 1, 1, 1, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //14
-                Pair.of(new Matrix(new double[][]{{0, 1, 0, 0, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //9
-                Pair.of(new Matrix(new double[][]{{1, 0, 1, 1, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //22
-                Pair.of(new Matrix(new double[][]{{1, 1, 0, 0, 0}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //24
-                Pair.of(new Matrix(new double[][]{{1, 0, 0, 0, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //16
-                Pair.of(new Matrix(new double[][]{{1, 1, 1, 1, 1}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //31
-                Pair.of(new Matrix(new double[][]{{0, 1, 1, 1, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //15
-                Pair.of(new Matrix(new double[][]{{0, 0, 0, 1, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //3
-                Pair.of(new Matrix(new double[][]{{0, 0, 1, 0, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()) //4
-        );
-
-        Main m = new Main();
-        List<Integer> hiddenLayersNeuronsCount = List.of(3, 3);
-        NeuralNetwork neuralNetwork = m.train(trainingData, hiddenLayersNeuronsCount);
-
-        List<Matrix> outputs = m.feedforward(new Matrix(new double[][]{{0, 0, 0, 1, 1}}).transpose(), neuralNetwork);
-        System.out.println(outputs.getLast());
-
-
-//        String trainImagesPath =  rootPath + "train-images.idx3-ubyte";
-//        String trainLabelsPath =  rootPath + "train-labels.idx1-ubyte";
-//        List<Pair<Matrix, Matrix>> mnistTrainingData = MnistReader.getDataForNN(trainImagesPath, trainLabelsPath);
+//        List<Pair<Matrix, Matrix>> trainingData = List.of(
+//                Pair.of(new Matrix(new double[][]{{0, 1, 1, 1, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //14
+//                Pair.of(new Matrix(new double[][]{{0, 1, 0, 0, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //9
+//                Pair.of(new Matrix(new double[][]{{1, 0, 1, 1, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //22
+//                Pair.of(new Matrix(new double[][]{{1, 1, 0, 0, 0}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //24
+//                Pair.of(new Matrix(new double[][]{{1, 0, 0, 0, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //16
+//                Pair.of(new Matrix(new double[][]{{1, 1, 1, 1, 1}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //31
+//                Pair.of(new Matrix(new double[][]{{0, 1, 1, 1, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //15
+//                Pair.of(new Matrix(new double[][]{{0, 0, 0, 1, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //3
+//                Pair.of(new Matrix(new double[][]{{0, 0, 1, 0, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()) //4
+//        );
+//
 //        Main m = new Main();
-//        List<Integer> hiddenLayersNeuronsCount = List.of(16, 16);
-//        NeuralNetwork neuralNetwork = m.train(mnistTrainingData, hiddenLayersNeuronsCount);
+//        List<Integer> hiddenLayersNeuronsCount = List.of(3, 3);
+//        NeuralNetwork neuralNetwork = m.train(trainingData, hiddenLayersNeuronsCount);
+//
+//        List<Matrix> outputs = m.feedforward(new Matrix(new double[][]{{0, 0, 0, 1, 1}}).transpose(), neuralNetwork);
+//        System.out.println(outputs.getLast());
+
+
+        String trainImagesPath =  rootPath + "train-images.idx3-ubyte";
+        String trainLabelsPath =  rootPath + "train-labels.idx1-ubyte";
+        List<Pair<Matrix, Matrix>> mnistTrainingData = MnistReader.getDataForNN(trainImagesPath, trainLabelsPath);
+        Main m = new Main();
+        List<Integer> hiddenLayersNeuronsCount = List.of(16, 16);
+        NeuralNetwork neuralNetwork = m.train(mnistTrainingData, hiddenLayersNeuronsCount);
     }
 
     public NeuralNetwork train(List<Pair<Matrix, Matrix>> trainingData, List<Integer> hiddenLayersNeuronsCount){
@@ -70,7 +70,8 @@ public class Main {
         }
         weights.add(Matrix.random(outputRows, previousLayerNeuronsCount, -1, 1));
 
-        int iterations = 10_000;
+        int iterations = 1_000;
+        int mod = iterations / 100;
         NeuralNetwork neuralNetwork = NeuralNetwork
                 .builder()
                 .weights(weights)
@@ -86,11 +87,9 @@ public class Main {
                 neuralNetwork = trainForOneInput(trainingDatum, neuralNetwork);
             }
 
-            double error = neuralNetwork.getOutputErrorDiff().apply(x -> x*x).sum();
-//            System.out.println("after " + (t + 1) + " epochs, error: " + error);
-
-            if((t == 0) || ((t+1)%1000 == 0)) {
-                System.out.println("after " + (t + 1) + " epochs, error: " + error+"\n"+neuralNetwork.getOutputErrorDiff());
+            if((t == 0) || ((t+1)%mod == 0)) {
+                double error = neuralNetwork.getOutputErrorDiff().apply(x -> x*x).sum();
+                System.out.println("after " + (t + 1) + " epochs, error: " + error);
             }
             trainingData = MathUtils.shuffle(trainingData);
         }

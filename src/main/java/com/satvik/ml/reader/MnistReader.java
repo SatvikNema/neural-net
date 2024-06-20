@@ -44,7 +44,7 @@ public class MnistReader {
                 int numberOfLabels = labelDis.readInt();
 
                 // only taking 1/10th of data for testing
-                for(int t=0;t<10;t++){
+                for(int t=0;t<numberOfItems/10;t++){
                     double[][] imageContent = new double[nRows][nCols];
                     for(int i=0;i<nRows;i++){
                         for(int j=0;j<nCols;j++){
