@@ -177,6 +177,18 @@ public class Matrix {
 
     }
 
+    public Matrix flatten(){
+        double[][] result = new double[1][rows * columns];
+        int index = 0;
+        for(int i=0;i<rows;i++){
+            for(int j=0;j<columns;j++){
+                result[0][index++] = content[i][j];
+            }
+
+        }
+        return new Matrix(result);
+    }
+
     public static Matrix average(List<Matrix> matrices){
         int r = matrices.getFirst().rows;
         int c = matrices.getFirst().columns;
@@ -191,5 +203,15 @@ public class Matrix {
             }
         }
         return new Matrix(result);
+    }
+
+    public double sum(){
+        double sum = 0;
+        for(int i=0;i<rows;i++){
+            for(int j=0;j<columns;j++){
+                sum += content[i][j];
+            }
+        }
+        return sum;
     }
 }

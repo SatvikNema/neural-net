@@ -24,7 +24,7 @@ public class NeuralNetwork {
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        getLayerOutputs().forEach(e -> sb.append(e).append("\n"));
+//        getLayerOutputs().forEach(e -> sb.append(e).append("\n"));
         getWeights().forEach(e -> sb.append(e).append("\n"));
         getBiases().forEach(e -> sb.append(e).append("\n"));
         return sb.toString();

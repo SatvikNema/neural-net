@@ -1,5 +1,6 @@
 package com.satvik.ml;
 
+import com.satvik.ml.reader.MnistReader;
 import com.satvik.ml.util.Functions;
 import com.satvik.ml.util.MathUtils;
 import com.satvik.ml.util.Matrix;
@@ -7,12 +8,16 @@ import com.satvik.ml.util.Matrix;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Double.NaN;
+
 public class Main {
 
-    double ALPHA = 0.1;
+    double ALPHA = 0.5;
+    private static final String rootPath = "/Users/satvik.nema/Documents/mnist_dataset/";
     public static void main(String[] args) {
 
         // neural network which determines if the binary input is divisible by 3
+
         List<Pair<Matrix, Matrix>> trainingData = List.of(
                 Pair.of(new Matrix(new double[][]{{0, 1, 1, 1, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()), //14
                 Pair.of(new Matrix(new double[][]{{0, 1, 0, 0, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //9
@@ -26,13 +31,22 @@ public class Main {
         );
 
         Main m = new Main();
-        List<Integer> hiddenLayersNeuronsCount = List.of(3, 4, 3);
-        m.train(trainingData, hiddenLayersNeuronsCount);
+        List<Integer> hiddenLayersNeuronsCount = List.of(3, 3);
+        NeuralNetwork neuralNetwork = m.train(trainingData, hiddenLayersNeuronsCount);
+
+        List<Matrix> outputs = m.feedforward(new Matrix(new double[][]{{0, 0, 0, 1, 1}}).transpose(), neuralNetwork);
+        System.out.println(outputs.getLast());
 
 
+//        String trainImagesPath =  rootPath + "train-images.idx3-ubyte";
+//        String trainLabelsPath =  rootPath + "train-labels.idx1-ubyte";
+//        List<Pair<Matrix, Matrix>> mnistTrainingData = MnistReader.getDataForNN(trainImagesPath, trainLabelsPath);
+//        Main m = new Main();
+//        List<Integer> hiddenLayersNeuronsCount = List.of(16, 16);
+//        NeuralNetwork neuralNetwork = m.train(mnistTrainingData, hiddenLayersNeuronsCount);
     }
 
-    public void train(List<Pair<Matrix, Matrix>> trainingData, List<Integer> hiddenLayersNeuronsCount){
+    public NeuralNetwork train(List<Pair<Matrix, Matrix>> trainingData, List<Integer> hiddenLayersNeuronsCount){
 
 
         int inputRows = trainingData.getFirst().getA().getRows();
@@ -56,7 +70,7 @@ public class Main {
         }
         weights.add(Matrix.random(outputRows, previousLayerNeuronsCount, -1, 1));
 
-        int iterations = 100_000;
+        int iterations = 10_000;
         NeuralNetwork neuralNetwork = NeuralNetwork
                 .builder()
                 .weights(weights)
@@ -65,39 +79,28 @@ public class Main {
                 .build();
 
         for(int t = 0;t<iterations;t++) {
-            for (Pair<Matrix, Matrix> trainingDatum : trainingData) {
-                neuralNetwork = trainForEachSamplePeepeee(trainingDatum, neuralNetwork);
+            if(t == 17){
+                int x = 11;
             }
-            if((t+1)%10 == 0) {
-                System.out.println("after " + (t + 1) + " epochs, error: \n" + neuralNetwork.getOutputErrorDiff());
+            for (Pair<Matrix, Matrix> trainingDatum : trainingData) {
+                neuralNetwork = trainForOneInput(trainingDatum, neuralNetwork);
+            }
+
+            double error = neuralNetwork.getOutputErrorDiff().apply(x -> x*x).sum();
+//            System.out.println("after " + (t + 1) + " epochs, error: " + error);
+
+            if((t == 0) || ((t+1)%1000 == 0)) {
+                System.out.println("after " + (t + 1) + " epochs, error: " + error+"\n"+neuralNetwork.getOutputErrorDiff());
             }
             trainingData = MathUtils.shuffle(trainingData);
         }
-
+         return neuralNetwork;
     }
 
-    private NeuralNetwork trainForEachSamplePeepeee(Pair<Matrix, Matrix> trainingData, NeuralNetwork nnConfig) {
-        List<Matrix> weights = nnConfig.getWeights();
-        List<Matrix> biases = nnConfig.getBiases();
-        List<Matrix> layerOutputs = new ArrayList<>();
+    private NeuralNetwork trainForOneInput(Pair<Matrix, Matrix> trainingData, NeuralNetwork nnConfig) {
 
-        // first input is without any activation function
-        Matrix input = trainingData.getA();
-        Matrix bias = biases.getFirst();
-        Matrix weight = weights.getFirst();
-        Matrix outputLayer1 = bias.add(weight.cross(input));
-        layerOutputs.add(outputLayer1);
-        Matrix prevLayerOutput = outputLayer1;
+        List<Matrix> layerOutputs = feedforward(trainingData.getA(), nnConfig);
 
-        for(int i=1;i<nnConfig.getLayers();i++){
-            input = prevLayerOutput.apply(Functions::sigmoid);
-            bias = biases.get(i);
-            weight = weights.get(i);
-            Matrix outputLayerI = bias.add(weight.cross(input));
-            layerOutputs.add(outputLayerI);
-
-            prevLayerOutput = outputLayerI;
-        }
         nnConfig.setLayerOutputs(layerOutputs);
 
         // back prop
@@ -130,6 +133,7 @@ public class Main {
         // for the first hidden layer, previous layer is the input. handle that accordingly
         Matrix thisLayerErrorTerm = nnConfig.getLayerOutputs().get(i).apply(Functions::differentialSigmoid).dot(nnConfig.getWeights().get(i+1).transpose().cross(nextLayerErrorTerm));
         Matrix deltaWeightI = thisLayerErrorTerm.multiply(trainingData.getA().apply(Functions::sigmoid));
+//        Matrix deltaWeightI = thisLayerErrorTerm.multiply(trainingData.getA());
         newWeights = nnConfig.getWeights().get(i).subtract(deltaWeightI.apply(x -> ALPHA*x));
         nnConfig.getWeights().set(i, newWeights);
 
@@ -139,6 +143,31 @@ public class Main {
         nnConfig.setOutputErrorDiff(outputLayerErrorTerm);
 
         return nnConfig;
+    }
+
+    private List<Matrix> feedforward(Matrix input, NeuralNetwork nnConfig){
+        List<Matrix> layerOutputs = new ArrayList<>();
+        List<Matrix> weights = nnConfig.getWeights();
+        List<Matrix> biases = nnConfig.getBiases();
+
+        // first input is without any activation function
+        Matrix bias = biases.getFirst();
+        Matrix weight = weights.getFirst();
+        Matrix outputLayer1 = bias.add(weight.cross(input));
+        layerOutputs.add(outputLayer1);
+        Matrix prevLayerOutput = outputLayer1;
+
+        for(int i=1;i<nnConfig.getLayers();i++){
+            input = prevLayerOutput.apply(Functions::sigmoid);
+            bias = biases.get(i);
+            weight = weights.get(i);
+            Matrix outputLayerI = bias.add(weight.cross(input));
+            layerOutputs.add(outputLayerI);
+
+            prevLayerOutput = outputLayerI;
+        }
+
+        return layerOutputs;
     }
 
 }
