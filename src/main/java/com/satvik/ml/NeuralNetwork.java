@@ -1,5 +1,6 @@
 package com.satvik.ml;
 
+import com.satvik.ml.util.Functions;
 import com.satvik.ml.util.Matrix;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -117,5 +118,28 @@ public class NeuralNetwork {
         return neuralNetwork;
     }
 
+    public void feedforward(Matrix input){
+        List<Matrix> layerOutputs = new ArrayList<>();
+        List<Matrix> weights = getWeights();
+        List<Matrix> biases = getBiases();
+
+        // first input is without any activation function
+        Matrix bias = biases.getFirst();
+        Matrix weight = weights.getFirst();
+        Matrix outputLayer1 = bias.add(weight.cross(input));
+        layerOutputs.add(outputLayer1);
+        Matrix prevLayerOutput = outputLayer1;
+
+        for(int i=1;i<getLayers();i++){
+            input = prevLayerOutput.apply(Functions::sigmoid);
+            bias = biases.get(i);
+            weight = weights.get(i);
+            Matrix outputLayerI = bias.add(weight.cross(input));
+            layerOutputs.add(outputLayerI);
+
+            prevLayerOutput = outputLayerI;
+        }
+        setLayerOutputs(layerOutputs);
+    }
 
 }
