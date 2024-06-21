@@ -1,4 +1,4 @@
-package com.satvik.ml;
+package com.satvik.ml.core;
 
 import com.satvik.ml.util.Functions;
 import com.satvik.ml.util.Matrix;
@@ -7,9 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -30,7 +27,6 @@ public class NeuralNetwork {
     private List<Matrix> layerOutputs;
     private int layers;
     private Matrix outputErrorDiff;
-    private List<Integer> structure;
     private double averageError;
 
     @Override

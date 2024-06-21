@@ -1,6 +1,6 @@
-package com.satvik.ml.util;
+package com.satvik.ml.core;
 
-import com.satvik.ml.NeuralNetwork;
+import com.satvik.ml.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;

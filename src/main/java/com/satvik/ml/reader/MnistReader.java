@@ -1,37 +1,27 @@
 package com.satvik.ml.reader;
 
-import com.satvik.ml.Pair;
+import com.satvik.ml.pojo.Pair;
 import com.satvik.ml.util.MathUtils;
 import com.satvik.ml.util.Matrix;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MnistReader {
 
-    public static void main(String[] args) throws IOException {
-        System.out.println("hello");
-        String trainImagesPath =  "train-images.idx3-ubyte";
-        String trainLabelsPath =  "train-labels.idx1-ubyte";
-
-        List<Pair<Matrix, Matrix>> trainingData = getDataForNN(trainImagesPath, trainLabelsPath);
-        int x = 1;
-    }
-
-    public static List<Pair<Matrix, Matrix>> getDataForNN(String testImagesPath, String testLabelsPath){
+    public static List<Pair<Matrix, Matrix>> getDataForNN(String testImagesPath, String testLabelsPath, int samples){
         try {
-            return getDataForNNHelper(testImagesPath, testLabelsPath);
+            return getDataForNNHelper(testImagesPath, testLabelsPath, samples);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static List<Pair<Matrix, Matrix>> getDataForNNHelper(String imagesPath, String labelsPath) throws IOException {
+    private static List<Pair<Matrix, Matrix>> getDataForNNHelper(String imagesPath, String labelsPath, int samples) throws IOException {
         List<Pair<Matrix, Matrix>> data = new ArrayList<>();
         try(DataInputStream trainingDis = new DataInputStream(new BufferedInputStream(new FileInputStream(imagesPath)))){
             try(DataInputStream labelDis = new DataInputStream(new BufferedInputStream(new FileInputStream(labelsPath)))){
@@ -43,8 +33,10 @@ public class MnistReader {
                 int labelMagicNumber = labelDis.readInt();
                 int numberOfLabels = labelDis.readInt();
 
+                numberOfItems = samples == -1 ? numberOfItems : samples;
+
                 // only taking 1/10th of data for testing
-                for(int t=0;t<numberOfItems/10;t++){
+                for(int t=0;t<numberOfItems;t++){
                     double[][] imageContent = new double[nRows][nCols];
                     for(int i=0;i<nRows;i++){
                         for(int j=0;j<nCols;j++){

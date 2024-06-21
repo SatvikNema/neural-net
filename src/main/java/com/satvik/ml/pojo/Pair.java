@@ -1,4 +1,4 @@
-package com.satvik.ml;
+package com.satvik.ml.pojo;
 
 import lombok.Getter;
 

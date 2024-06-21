@@ -1,5 +1,6 @@
 package com.satvik.ml.util;
 
+import com.satvik.ml.pojo.Pair;
 import lombok.Data;
 
 import java.util.Arrays;
@@ -225,5 +226,20 @@ public class Matrix {
             sb.append("\n");
         }
         return sb.toString();
+    }
+
+    public Pair<Double, int[]> max() {
+        int[] maxIndex = new int[]{-1, -1};
+        double maxValue = Double.MIN_VALUE;
+        for (int i = 0; i < rows; i++) {
+            for(int j=0;j<columns;j++){
+                if(content[i][j] > maxValue){
+                    maxValue = content[i][j];
+                    maxIndex = new int[]{i, j};
+                }
+            }
+
+        }
+        return Pair.of(maxValue, maxIndex);
     }
 }
