@@ -214,4 +214,16 @@ public class Matrix {
         }
         return sum;
     }
+
+    public String getContentToSerialise(){
+        StringBuilder sb = new StringBuilder(rows+" ");
+        sb.append(columns+"\n");
+        for (int i = 0; i < rows; i++) {
+            for(int j=0;j<columns;j++){
+                sb.append(content[i][j]+" ");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 }

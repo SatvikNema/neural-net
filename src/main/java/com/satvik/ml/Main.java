@@ -5,6 +5,7 @@ import com.satvik.ml.util.Functions;
 import com.satvik.ml.util.MathUtils;
 import com.satvik.ml.util.Matrix;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +13,10 @@ import static java.lang.Double.NaN;
 
 public class Main {
 
+    public static final int ITERATIONS = 10;
     double ALPHA = 0.01;
     private static final String rootPath = "/Users/satvik.nema/Documents/mnist_dataset/";
+    private double error = 0;
     public static void main(String[] args) {
 
         // neural network which determines if the binary input is divisible by 3
@@ -29,7 +32,9 @@ public class Main {
 //                Pair.of(new Matrix(new double[][]{{0, 0, 0, 1, 1}}).transpose(), new Matrix(new double[][]{{1, 0}}).transpose()), //3
 //                Pair.of(new Matrix(new double[][]{{0, 0, 1, 0, 0}}).transpose(), new Matrix(new double[][]{{0, 1}}).transpose()) //4
 //        );
-//
+        NeuralNetwork neuralNetwork;
+
+
 //        Main m = new Main();
 //        List<Integer> hiddenLayersNeuronsCount = List.of(3, 3);
 //        NeuralNetwork neuralNetwork = m.train(trainingData, hiddenLayersNeuronsCount);
@@ -43,7 +48,39 @@ public class Main {
         List<Pair<Matrix, Matrix>> mnistTrainingData = MnistReader.getDataForNN(trainImagesPath, trainLabelsPath);
         Main m = new Main();
         List<Integer> hiddenLayersNeuronsCount = List.of(16, 16);
-        NeuralNetwork neuralNetwork = m.train(mnistTrainingData, hiddenLayersNeuronsCount);
+        neuralNetwork = m.train(mnistTrainingData, hiddenLayersNeuronsCount);
+
+        try {
+            String modelName = String.format("%s-%s.txt", mnistTrainingData.size(), ITERATIONS);
+            neuralNetwork.serialise("/Users/satvik.nema/practise/nerual-net/src/main/resources/"+modelName);
+        } catch (IOException e) {
+            System.out.println("failed while trying to save model");
+            throw new RuntimeException(e);
+        }
+
+        // read the pre-trained model
+        try {
+            neuralNetwork = NeuralNetwork.deserialise("/Users/satvik.nema/practise/nerual-net/src/main/resources/6000-10.txt");
+            int x = 1;
+        } catch (IOException e) {
+            System.out.println("failed to load the model from disk");
+            throw new RuntimeException(e);
+        }
+
+        double error = m.validate(neuralNetwork, mnistTrainingData);
+        System.out.println(error);
+    }
+
+    private double validate(NeuralNetwork neuralNetwork, List<Pair<Matrix, Matrix>> trainingData) {
+        double error = 0;
+        for (Pair<Matrix, Matrix> trainingDatum : trainingData) {
+            List<Matrix> outputs = feedforward(trainingDatum.getA(), neuralNetwork);
+            Matrix output = outputs.getLast();
+
+            Matrix errorMatrix = output.subtract(trainingDatum.getB());
+            error += errorMatrix.apply(x -> x*x).sum() / trainingData.size();
+        }
+        return error;
     }
 
     public NeuralNetwork train(List<Pair<Matrix, Matrix>> trainingData, List<Integer> hiddenLayersNeuronsCount){
@@ -70,8 +107,7 @@ public class Main {
         }
         weights.add(Matrix.random(outputRows, previousLayerNeuronsCount, -1, 1));
 
-        int iterations = 1_000;
-        int mod = iterations / 100;
+        int mod = ITERATIONS / 100 == 0 ? 1 : ITERATIONS / 100;
         NeuralNetwork neuralNetwork = NeuralNetwork
                 .builder()
                 .weights(weights)
@@ -79,21 +115,23 @@ public class Main {
                 .layers(hiddenLayersNeuronsCount.size()+1)
                 .build();
 
-        for(int t = 0;t<iterations;t++) {
-            if(t == 17){
-                int x = 11;
-            }
+        for(int t = 0; t< ITERATIONS; t++) {
             for (Pair<Matrix, Matrix> trainingDatum : trainingData) {
                 neuralNetwork = trainForOneInput(trainingDatum, neuralNetwork);
+                double errorAdditionTerm = neuralNetwork.getOutputErrorDiff().apply(x -> x*x).sum() / trainingData.size();
+                error += errorAdditionTerm;
             }
 
+            neuralNetwork.setAverageError(error);
+
             if((t == 0) || ((t+1)%mod == 0)) {
-                double error = neuralNetwork.getOutputErrorDiff().apply(x -> x*x).sum();
-                System.out.println("after " + (t + 1) + " epochs, error: " + error);
+                System.out.println("after " + (t + 1) + " epochs, average error: " + error);
             }
+            error = 0;
             trainingData = MathUtils.shuffle(trainingData);
         }
-         return neuralNetwork;
+
+        return neuralNetwork;
     }
 
     private NeuralNetwork trainForOneInput(Pair<Matrix, Matrix> trainingData, NeuralNetwork nnConfig) {
