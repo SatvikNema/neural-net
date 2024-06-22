@@ -13,24 +13,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class MnistTester implements NeuralNetworkTester {
-  private NeuralNetwork neuralNetwork;
+    private NeuralNetwork neuralNetwork;
 
-  public double validate(List<Pair<Matrix, Matrix>> trainingData) {
-    double error = 0;
-    int countMissed = 0;
-    for (Pair<Matrix, Matrix> trainingDatum : trainingData) {
-      neuralNetwork.feedforward(trainingDatum.getA());
-      Matrix output = neuralNetwork.getLayerOutputs().getLast();
-      int predicted = output.max().getB()[0];
-      int actual = trainingDatum.getB().max().getB()[0];
-      if (predicted != actual) {
-        countMissed++;
-      }
+    public double validate(List<Pair<Matrix, Matrix>> trainingData) {
+        double error = 0;
+        int countMissed = 0;
+        for (Pair<Matrix, Matrix> trainingDatum : trainingData) {
+            neuralNetwork.feedforward(trainingDatum.getA());
+            Matrix output = neuralNetwork.getLayerOutputs().getLast();
+            int predicted = output.max().getB()[0];
+            int actual = trainingDatum.getB().max().getB()[0];
+            if (predicted != actual) {
+                countMissed++;
+            }
 
-      Matrix errorMatrix = output.subtract(trainingDatum.getB());
-      error += errorMatrix.apply(x -> x * x).sum() / trainingData.size();
+            Matrix errorMatrix = output.subtract(trainingDatum.getB());
+            error += errorMatrix.apply(x -> x * x).sum() / trainingData.size();
+        }
+        System.out.printf("Total: %s, wrong: %s%n", trainingData.size(), countMissed);
+        return error;
     }
-    System.out.printf("Total: %s, wrong: %s%n", trainingData.size(), countMissed);
-    return error;
-  }
 }

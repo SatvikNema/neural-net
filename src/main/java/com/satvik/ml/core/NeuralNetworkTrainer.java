@@ -5,5 +5,5 @@ import com.satvik.ml.util.Matrix;
 import java.util.List;
 
 interface NeuralNetworkTrainer {
-  void train(List<Pair<Matrix, Matrix>> trainingData);
+    void train(List<Pair<Matrix, Matrix>> trainingData);
 }

@@ -5,5 +5,5 @@ import com.satvik.ml.util.Matrix;
 import java.util.List;
 
 interface NeuralNetworkTester {
-  double validate(List<Pair<Matrix, Matrix>> trainingData);
+    double validate(List<Pair<Matrix, Matrix>> trainingData);
 }
