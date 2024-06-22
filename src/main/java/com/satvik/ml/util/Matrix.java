@@ -115,10 +115,6 @@ public class Matrix {
         return s.toString();
     }
 
-    public void print(){
-        System.out.println(this);
-    }
-
     public Matrix add(Matrix b){
         if(!dimensionsMatch(b)){
             throw new RuntimeException("cannot do matrix addition as the dimensions do not match!");
@@ -186,22 +182,6 @@ public class Matrix {
                 result[0][index++] = content[i][j];
             }
 
-        }
-        return new Matrix(result);
-    }
-
-    public static Matrix average(List<Matrix> matrices){
-        int r = matrices.getFirst().rows;
-        int c = matrices.getFirst().columns;
-        double[][] result = new double[r][c];
-        for(int i=0;i<r;i++){
-            for(int j=0;j<c;j++){
-                double sum = 0;
-                for(Matrix m : matrices){
-                    sum += m.content[i][j];
-                }
-                result[i][j] = sum / matrices.size();
-            }
         }
         return new Matrix(result);
     }

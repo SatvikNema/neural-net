@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class MnistTrainer implements NeuralNetworkTrainer{
+public class MnistTrainer implements NeuralNetworkTrainer {
     private NeuralNetwork neuralNetwork;
     private int iterations;
     private double learningRate;
