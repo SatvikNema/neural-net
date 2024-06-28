@@ -24,7 +24,7 @@ public class Main {
         String trainLabelsPath = rootPath + "train-labels.idx1-ubyte";
 
         List<Pair<Matrix, Matrix>> mnistTrainingData =
-                MnistReader.getDataForNN(trainImagesPath, trainLabelsPath, -1);
+                MnistReader.getDataForNN(trainImagesPath, trainLabelsPath, 6000);
 
         List<Integer> hiddenLayersNeuronsCount = List.of(16, 16);
 

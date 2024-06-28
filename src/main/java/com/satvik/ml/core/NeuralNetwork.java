@@ -121,8 +121,6 @@ public class NeuralNetwork {
 
     public void feedforward(Matrix input) {
         List<Matrix> layerOutputs = new ArrayList<>();
-        List<Matrix> weights = getWeights();
-        List<Matrix> biases = getBiases();
 
         // first input is without any activation function
         Matrix bias = biases.getFirst();
