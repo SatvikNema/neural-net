@@ -157,21 +157,6 @@ public class Matrix {
         return new Matrix(result);
     }
 
-    public Matrix multiply(Matrix b) {
-        int rows = this.rows;
-        int columns = b.rows;
-        if (this.columns > 1 || b.columns > 1) {
-            throw new RuntimeException("Cannot do a multiply with more than one column");
-        }
-        double[][] result = new double[rows][columns];
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                result[i][j] = this.content[i][0] * b.content[j][0];
-            }
-        }
-        return new Matrix(result);
-    }
-
     public Matrix flatten() {
         double[][] result = new double[1][rows * columns];
         int index = 0;

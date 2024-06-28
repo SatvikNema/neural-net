@@ -1,5 +1,6 @@
 package com.satvik.ml.core;
 
+import com.satvik.ml.pojo.Pair;
 import com.satvik.ml.util.Functions;
 import com.satvik.ml.util.Matrix;
 import java.io.IOException;
@@ -119,6 +120,11 @@ public class NeuralNetwork {
         return neuralNetwork;
     }
 
+    public void trainForOneInput(Pair<Matrix, Matrix> trainingData, double learningRate) {
+        feedforward(trainingData.getA());
+        backpropagation(trainingData, learningRate);
+    }
+
     public void feedforward(Matrix input) {
         List<Matrix> layerOutputs = new ArrayList<>();
 
@@ -139,5 +145,65 @@ public class NeuralNetwork {
             prevLayerOutput = outputLayerI;
         }
         setLayerOutputs(layerOutputs);
+    }
+
+    private void backpropagation(Pair<Matrix, Matrix> trainingData, double learningRate) {
+        // back prop - last layer's calculation is different from hidden layers
+        Matrix outputLayerErrorTerm = backpropagationForLastLayer(trainingData, learningRate);
+        Matrix nextLayerErrorTerm = outputLayerErrorTerm;
+        outputErrorDiff = outputLayerErrorTerm;
+
+        // process the hidden layers
+        int i;
+        for (i = layers - 2; i > 0; i--) {
+            Matrix thisLayerErrorTerm =
+                    layerOutputs
+                            .get(i)
+                            .apply(Functions::differentialSigmoid)
+                            .dot(weights.get(i + 1).transpose().cross(nextLayerErrorTerm));
+            adjustWeightsAndBiases(learningRate, i, thisLayerErrorTerm);
+
+            nextLayerErrorTerm = thisLayerErrorTerm;
+        }
+
+        // for the first hidden layer, previous layer is the input. handle that accordingly
+        backpropagationForSecondLayer(trainingData.getA(), nextLayerErrorTerm, learningRate);
+    }
+
+    private Matrix backpropagationForLastLayer(
+            Pair<Matrix, Matrix> trainingData, double learningRate) {
+        int layerInProcessing = layers - 1;
+        Matrix outputLayerErrorTerm =
+                layerOutputs.get(layerInProcessing).subtract(trainingData.getB());
+        adjustWeightsAndBiases(learningRate, layerInProcessing, outputLayerErrorTerm);
+
+        return outputLayerErrorTerm;
+    }
+
+    private void adjustWeightsAndBiases(double learningRate, int i, Matrix thisLayerErrorTerm) {
+        Matrix deltaWeightI =
+                thisLayerErrorTerm.cross(
+                        layerOutputs.get(i - 1).apply(Functions::sigmoid).transpose());
+        Matrix newWeights = weights.get(i).subtract(deltaWeightI.apply(x -> learningRate * x));
+        weights.set(i, newWeights);
+
+        Matrix newBiases = biases.get(i).subtract(thisLayerErrorTerm.apply(x -> learningRate * x));
+        biases.set(i, newBiases);
+    }
+
+    private void backpropagationForSecondLayer(
+            Matrix trainingData, Matrix nextLayerErrorTerm, double learningRate) {
+        Matrix thisLayerErrorTerm =
+                layerOutputs
+                        .getFirst()
+                        .apply(Functions::differentialSigmoid)
+                        .dot(weights.get(1).transpose().cross(nextLayerErrorTerm));
+        Matrix deltaWeightI = thisLayerErrorTerm.cross(trainingData.transpose());
+        Matrix newWeights = weights.get(0).subtract(deltaWeightI.apply(x -> learningRate * x));
+        weights.set(0, newWeights);
+
+        Matrix newBiases =
+                biases.getFirst().subtract(thisLayerErrorTerm.apply(x -> learningRate * x));
+        biases.set(0, newBiases);
     }
 }
