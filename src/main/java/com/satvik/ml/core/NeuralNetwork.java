@@ -65,50 +65,11 @@ public class NeuralNetwork {
         try (Stream<String> linesStream =
                 Files.lines(Path.of(filePath), Charset.defaultCharset())) {
             List<String> lines = linesStream.toList();
-            int x = 1;
             int index = 0;
             layers = Integer.parseInt(lines.get(index++));
-            for (int i = 0; i < layers; i++) {
-                String[] dimensions = lines.get(index++).split("\\s+");
-                int rows = Integer.parseInt(dimensions[0]);
-                int columns = Integer.parseInt(dimensions[1]);
-
-                double[][] weight = new double[rows][columns];
-                for (int row = 0; row < rows; row++) {
-                    List<Double> doubleList =
-                            Stream.of(lines.get(index++).split("\\s+"))
-                                    .map(Double::parseDouble)
-                                    .toList();
-                    double[] thisRow = new double[columns];
-                    for (int j = 0; j < columns; j++) {
-                        thisRow[j] = doubleList.get(j);
-                    }
-                    weight[row] = thisRow;
-                }
-                weights.add(new Matrix(weight));
-            }
-
-            for (int i = 0; i < layers; i++) {
-                String[] dimensions = lines.get(index++).split("\\s+");
-                int rows = Integer.parseInt(dimensions[0]);
-                int columns = Integer.parseInt(dimensions[1]);
-
-                double[][] bias = new double[rows][columns];
-                for (int row = 0; row < rows; row++) {
-                    List<Double> doubleList =
-                            Stream.of(lines.get(index++).split("\\s+"))
-                                    .map(Double::parseDouble)
-                                    .toList();
-                    double[] thisRow = new double[columns];
-                    for (int j = 0; j < columns; j++) {
-                        thisRow[j] = doubleList.get(j);
-                    }
-                    bias[row] = thisRow;
-                }
-                biases.add(new Matrix(bias));
-            }
-
-            double avgError = Double.parseDouble(lines.get(index++));
+            index = extractComponent(weights, layers, lines, index);
+            index = extractComponent(biases, layers, lines, index);
+            double avgError = Double.parseDouble(lines.get(index));
             neuralNetwork =
                     NeuralNetwork.builder()
                             .weights(weights)
@@ -118,6 +79,30 @@ public class NeuralNetwork {
                             .build();
         }
         return neuralNetwork;
+    }
+
+    private static int extractComponent(
+            List<Matrix> component, int layers, List<String> lines, int index) {
+        for (int i = 0; i < layers; i++) {
+            String[] dimensions = lines.get(index++).split("\\s+");
+            int rows = Integer.parseInt(dimensions[0]);
+            int columns = Integer.parseInt(dimensions[1]);
+
+            double[][] bias = new double[rows][columns];
+            for (int row = 0; row < rows; row++) {
+                List<Double> doubleList =
+                        Stream.of(lines.get(index++).split("\\s+"))
+                                .map(Double::parseDouble)
+                                .toList();
+                double[] thisRow = new double[columns];
+                for (int j = 0; j < columns; j++) {
+                    thisRow[j] = doubleList.get(j);
+                }
+                bias[row] = thisRow;
+            }
+            component.add(new Matrix(bias));
+        }
+        return index;
     }
 
     public void trainForOneInput(Pair<Matrix, Matrix> trainingData, double learningRate) {

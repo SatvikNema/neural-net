@@ -9,6 +9,8 @@ import com.satvik.ml.reader.MnistReader;
 import com.satvik.ml.util.Matrix;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 public class Main {
@@ -50,9 +52,14 @@ public class Main {
             trainedNetwork = NeuralNetwork.deserialise(modelName);
         } else {
             System.out.println("model for this configuration does NOT exists. Starting training");
+            Instant start = Instant.now();
             mnistTrainer.train(mnistTrainingData);
+            Instant end = Instant.now();
             trainedNetwork = mnistTrainer.getNeuralNetwork();
             trainedNetwork.serialise(modelName);
+
+            long seconds = Duration.between(start, end).getSeconds();
+            System.out.println("Time taken for training: " + seconds + "s");
         }
 
         String testImagesPath = rootPath + "t10k-images.idx3-ubyte";
@@ -62,6 +69,6 @@ public class Main {
                 MnistReader.getDataForNN(testImagesPath, testLabelsPath, -1);
         MnistTester mnistTester = MnistTester.builder().neuralNetwork(trainedNetwork).build();
         double error = mnistTester.validate(mnistTestingData);
-        System.out.println(error);
+        System.out.println("Error: " + error);
     }
 }

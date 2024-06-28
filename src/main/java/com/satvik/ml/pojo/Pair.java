@@ -17,7 +17,7 @@ public class Pair<A, B> {
     }
 
     @Override
-    public String toString(){
-        return "("+a+", "+b+")";
+    public String toString() {
+        return "(" + a + ", " + b + ")";
     }
 }

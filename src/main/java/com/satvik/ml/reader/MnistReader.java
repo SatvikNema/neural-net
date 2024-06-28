@@ -13,9 +13,9 @@ import java.util.List;
 public class MnistReader {
 
     public static List<Pair<Matrix, Matrix>> getDataForNN(
-            String testImagesPath, String testLabelsPath, int samples) {
+            String imagePath, String labelsPath, int samples) {
         try {
-            return getDataForNNHelper(testImagesPath, testLabelsPath, samples);
+            return getDataForNNHelper(imagePath, labelsPath, samples);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -2,7 +2,6 @@ package com.satvik.ml.core;
 
 import com.satvik.ml.pojo.Pair;
 import com.satvik.ml.util.Matrix;
-
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -29,7 +28,7 @@ public class MnistTester implements NeuralNetworkTester {
             int actual = trainingDatum.getB().max().getB()[0];
             if (predicted != actual) {
                 countMissed++;
-                missedIndexes.add("("+index+", "+actual+", "+predicted+")");
+                missedIndexes.add("(" + index + ", " + actual + ", " + predicted + ")");
             }
 
             Matrix errorMatrix = output.subtract(trainingDatum.getB());
