@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Main {
 
-    public static final int ITERATIONS = 100;
+    public static final int ITERATIONS = 1000;
     static double ALPHA = 0.01;
     private static final String rootPath = "/Users/satvik.nema/Documents/mnist_dataset/";
     private static final String resourcesRoot =
@@ -26,7 +26,7 @@ public class Main {
         String trainLabelsPath = rootPath + "train-labels.idx1-ubyte";
 
         List<Pair<Matrix, Matrix>> mnistTrainingData =
-                MnistReader.getDataForNN(trainImagesPath, trainLabelsPath, 60000);
+                MnistReader.getDataForNN(trainImagesPath, trainLabelsPath, -1);
 
         List<Integer> hiddenLayersNeuronsCount = List.of(16, 16);
 
