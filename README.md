@@ -1,6 +1,8 @@
 # neural-net
 
-This repo implements a neural network using 2d arrays and math in pure java. No other frameworks and libraries used.
+This repository implements a neural network using 2d arrays and math in pure java. No other frameworks and libraries used.
+
+![mock_network.webp](mock_network.webp)
 
 You've come to the right place if :
  - you're new to ML 
